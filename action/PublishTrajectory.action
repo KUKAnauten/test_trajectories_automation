@@ -1,0 +1,8 @@
+# Define the goal
+string filename
+---
+# Define the result
+float64 test # suitable result?
+---
+# Define a feedback message
+float64 time_elapsed

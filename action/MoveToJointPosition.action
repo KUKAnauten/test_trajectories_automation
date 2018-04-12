@@ -1,0 +1,8 @@
+# Define the goal
+trajectory_msgs/JointTrajectory joint_positions
+---
+# Define the result
+float64 test # send back pose for verification?
+---
+# Define a feedback message
+float64 time_elapsed

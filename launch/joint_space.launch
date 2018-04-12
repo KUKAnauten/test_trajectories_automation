@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<launch>
+    
+  <arg name="robot_name" default="iiwa"/>
+  <!-- Model of the iiwa to use : iiwa7, iiwa14 -->
+  <arg name="model" default="iiwa14"/>
+  <arg name="debug" default="false"/>
+	<arg name="scale_factor" default="1"/> <!-- MOD -->
+	<arg name="rad_input" default="true"/>
+	<arg name="udp" default="false"/>
+
+  <group ns="$(arg robot_name)" unless="$(arg debug)">
+		
+    <node name="test_trajectories_automation_client" pkg="test_trajectories_automation" type="test_trajectories_automation_client" respawn="false" output="screen">
+    </node>
+
+		<node name="joint_follower_server" pkg="test_trajectories_automation" type="joint_follower_server">
+			<param name="scale_factor" value="$(arg scale_factor)"/> 
+			<param name="rad_input" value="$(arg rad_input)"/>
+			<param name="udp" value="$(arg udp)"/>
+      <rosparam command="load" file="$(find iiwa_moveit)/config/kinematics.yaml"/>   
+		</node>
+
+    <node pkg="test_trajectories_automation" name="as_publish_trajectory" type="jointAngles_read.py" output="screen"> 
+    </node>
+
+    <node pkg="test_trajectories_automation" name="state_publisher" type="state_publisher" output="screen"> 
+<!--      <rosparam command="load" file="$(find iiwa_moveit)/config/kinematics.yaml"/>-->
+    </node>
+
+  </group>
+	
+  <group ns="$(arg robot_name)" if="$(arg debug)">
+    <node name="test_trajectories_automation_client" pkg="test_trajectories_automation" type="test_trajectories_automation_client" respawn="false" output="screen" launch-prefix="xterm -e gdb --args">
+    </node>
+  </group>
+
+</launch>

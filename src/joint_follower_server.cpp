@@ -66,13 +66,22 @@ public:
 		initial_joint_positions_.joint_names = RobotInterface::getJointNames();
 		initial_joint_positions_.points.resize(1);
 		initial_joint_positions_.points[0].positions.resize(7);
-		initial_joint_positions_.points[0].positions[0] = 3.1416/180.0 * -50.21;
-		initial_joint_positions_.points[0].positions[1] = 3.1416/180.0 * 31.60;
-		initial_joint_positions_.points[0].positions[2] = 3.1416/180.0 * 44.26;
-		initial_joint_positions_.points[0].positions[3] = 3.1416/180.0 * -83.30;
-		initial_joint_positions_.points[0].positions[4] = 3.1416/180.0 * -19.60; 
-		initial_joint_positions_.points[0].positions[5] = 3.1416/180.0 * -5.25; 
-		initial_joint_positions_.points[0].positions[6] = 3.1416/180.0 * 1.01;
+//		initial_joint_positions_.points[0].positions[0] = 3.1416/180.0 * -50.21;
+//		initial_joint_positions_.points[0].positions[1] = 3.1416/180.0 * 31.60;
+//		initial_joint_positions_.points[0].positions[2] = 3.1416/180.0 * 44.26;
+//		initial_joint_positions_.points[0].positions[3] = 3.1416/180.0 * -83.30;
+//		initial_joint_positions_.points[0].positions[4] = 3.1416/180.0 * -19.60; 
+//		initial_joint_positions_.points[0].positions[5] = 3.1416/180.0 * -5.25; 
+//		initial_joint_positions_.points[0].positions[6] = 3.1416/180.0 * 1.01;
+
+    // new iiwa mounting and mirroring the operator's input
+		initial_joint_positions_.points[0].positions[0] = 3.1416/180.0 * -1.0 * -28.03;
+		initial_joint_positions_.points[0].positions[1] = 3.1416/180.0 * (-1.0 * 19.18 + 90.0);
+		initial_joint_positions_.points[0].positions[2] = 3.1416/180.0 * -22.67;
+		initial_joint_positions_.points[0].positions[3] = 3.1416/180.0 * -1.0 * -60.41;
+		initial_joint_positions_.points[0].positions[4] = 3.1416/180.0 * (58.19 + 90.0); 
+		initial_joint_positions_.points[0].positions[5] = 3.1416/180.0 * -1.0 * -12.01; 
+		initial_joint_positions_.points[0].positions[6] = 3.1416/180.0 * -6.46;
 
 		mcs_initial_joint_positions_.joint_names.resize(7);
 		mcs_initial_joint_positions_.joint_names = RobotInterface::getJointNames();
@@ -215,12 +224,21 @@ private:
 
       //geometry_msgs::Pose target_pose = base_pose_;
 			trajectory_msgs::JointTrajectory trajectory_point = base_pose_joint_positions_;
-			trajectory_point.points[0].positions[0] += (a1 - mcs_initial_joint_positions_.points[0].positions[0])*angle_conversion_;
-			trajectory_point.points[0].positions[1] += (a2 - mcs_initial_joint_positions_.points[0].positions[1])*angle_conversion_;
-			trajectory_point.points[0].positions[2] -= (a3 - mcs_initial_joint_positions_.points[0].positions[2])*angle_conversion_;
-			trajectory_point.points[0].positions[3] += (a4 - mcs_initial_joint_positions_.points[0].positions[3])*angle_conversion_;
-			trajectory_point.points[0].positions[4] -= (a5 - mcs_initial_joint_positions_.points[0].positions[4])*angle_conversion_;
-			trajectory_point.points[0].positions[5] += (a7 - mcs_initial_joint_positions_.points[0].positions[6])*angle_conversion_;
+//			trajectory_point.points[0].positions[0] += (a1 - mcs_initial_joint_positions_.points[0].positions[0])*angle_conversion_;
+//			trajectory_point.points[0].positions[1] += (a2 - mcs_initial_joint_positions_.points[0].positions[1])*angle_conversion_;
+//			trajectory_point.points[0].positions[2] -= (a3 - mcs_initial_joint_positions_.points[0].positions[2])*angle_conversion_;
+//			trajectory_point.points[0].positions[3] += (a4 - mcs_initial_joint_positions_.points[0].positions[3])*angle_conversion_;
+//			trajectory_point.points[0].positions[4] -= (a5 - mcs_initial_joint_positions_.points[0].positions[4])*angle_conversion_;
+//			trajectory_point.points[0].positions[5] += (a7 - mcs_initial_joint_positions_.points[0].positions[6])*angle_conversion_;
+//			trajectory_point.points[0].positions[6] += 0.0*angle_conversion_;
+
+      // new mounting and mirroring movement
+			trajectory_point.points[0].positions[0] -= (a1 - mcs_initial_joint_positions_.points[0].positions[0])*angle_conversion_;
+			trajectory_point.points[0].positions[1] -= (a2 - mcs_initial_joint_positions_.points[0].positions[1])*angle_conversion_;
+			trajectory_point.points[0].positions[2] += (a3 - mcs_initial_joint_positions_.points[0].positions[2])*angle_conversion_;
+			trajectory_point.points[0].positions[3] -= (a4 - mcs_initial_joint_positions_.points[0].positions[3])*angle_conversion_;
+			trajectory_point.points[0].positions[4] += (a5 - mcs_initial_joint_positions_.points[0].positions[4])*angle_conversion_;
+			trajectory_point.points[0].positions[5] -= (a7 - mcs_initial_joint_positions_.points[0].positions[6])*angle_conversion_;
 			trajectory_point.points[0].positions[6] += 0.0*angle_conversion_;
 
 			trajectory_point = jointLimitation(trajectory_point);

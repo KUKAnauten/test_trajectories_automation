@@ -39,13 +39,20 @@
 #include <actionlib/server/simple_action_server.h>
 #include <test_trajectories_automation/MoveToJointPositionAction.h>
 
+#define PI 3.14159265359
+
 namespace pose_follower {
 
 class PoseFollower : public iimoveit::RobotInterface {
 public:
-  PoseFollower(ros::NodeHandle* node_handle, const std::string& planning_group, const std::string& base_frame, double scale_factor, double max_radius, std::string name)
+  PoseFollower(ros::NodeHandle* node_handle, const std::string& planning_group, const std::string& base_frame, double scale_x, double scale_y, double scale_z, double scale_rot_x, double scale_rot_y, double scale_rot_z, double max_radius, std::string name)
       : RobotInterface(node_handle, planning_group, base_frame),
-        scale_factor_(scale_factor),
+        scale_x_(scale_x),
+        scale_y_(scale_y),
+        scale_z_(scale_z),
+        scale_rot_x_(scale_rot_x),
+        scale_rot_y_(scale_rot_y),
+        scale_rot_z_(scale_rot_z),
         max_radius_(max_radius),
         max_radius2_(max_radius*max_radius),
     		as_(nh_, name, boost::bind(&PoseFollower::executeCB, this, _1), false),
@@ -58,13 +65,13 @@ public:
 		initial_joint_positions_.joint_names = RobotInterface::getJointNames();
 		initial_joint_positions_.points.resize(1);
 		initial_joint_positions_.points[0].positions.resize(7);
-		initial_joint_positions_.points[0].positions[0] = 3.1416/180.0 * -50.21;
-		initial_joint_positions_.points[0].positions[1] = 3.1416/180.0 * 31.60;
-		initial_joint_positions_.points[0].positions[2] = 3.1416/180.0 * 44.26;
-		initial_joint_positions_.points[0].positions[3] = 3.1416/180.0 * -83.30;
-		initial_joint_positions_.points[0].positions[4] = 3.1416/180.0 * -19.60; 
-		initial_joint_positions_.points[0].positions[5] = 3.1416/180.0 * -5.25; 
-		initial_joint_positions_.points[0].positions[6] = 3.1416/180.0 * 1.01;
+		initial_joint_positions_.points[0].positions[0] = PI/180.0 * -50.21;
+		initial_joint_positions_.points[0].positions[1] = PI/180.0 * 31.60;
+		initial_joint_positions_.points[0].positions[2] = PI/180.0 * 44.26;
+		initial_joint_positions_.points[0].positions[3] = PI/180.0 * -83.30;
+		initial_joint_positions_.points[0].positions[4] = PI/180.0 * -19.60; 
+		initial_joint_positions_.points[0].positions[5] = PI/180.0 * -5.25; 
+		initial_joint_positions_.points[0].positions[6] = PI/180.0 * 1.01;
 		
 		as_.start();
   }
@@ -125,16 +132,21 @@ private:
   ros::Subscriber pose_subscriber_;
 	trajectory_msgs::JointTrajectory initial_joint_positions_;
   geometry_msgs::Pose base_pose_;
-  double scale_factor_;
+  double scale_x_;
+  double scale_y_;
+  double scale_z_;
+  double scale_rot_x_;
+  double scale_rot_y_;
+  double scale_rot_z_;
   double max_radius_;
   double max_radius2_;
   bool first_time_;
   tf::Quaternion calib_quaternion_; // relation between initial poses of iiwa and mcs 
 
   void poseCallbackRelative(const geometry_msgs::PoseStamped::ConstPtr& msg) {
-    double x = msg->pose.position.x * scale_factor_;
-    double y = msg->pose.position.y * scale_factor_;
-    double z = msg->pose.position.z * scale_factor_;
+    double x = msg->pose.position.x * scale_x_;
+    double y = msg->pose.position.y * scale_y_;
+    double z = msg->pose.position.z * scale_z_;
     if (x*x + y*y + z*z <= max_radius2_) {
       
       tf::Quaternion base_quaternion(base_pose_.orientation.x, base_pose_.orientation.y, base_pose_.orientation.z, base_pose_.orientation.w);
@@ -145,7 +157,27 @@ private:
         first_time_ = false;
       }  
 
-      tf::Quaternion relative_quaternion = next_quaternion * calib_quaternion_ * base_quaternion;
+      tf::Quaternion relative_quaternion = next_quaternion * calib_quaternion_;
+
+      if ( (scale_rot_x_ != 1.0) || (scale_rot_y_ != 1.0) || (scale_rot_z_ != 1.0) ) {
+        tf::Matrix3x3 rotMatrix(relative_quaternion);
+        double euler_x, euler_y, euler_z;
+        rotMatrix.getEulerYPR(euler_z, euler_y, euler_x);
+        euler_x *= scale_rot_x_;
+        euler_y *= scale_rot_y_;
+        euler_z *= scale_rot_z_;
+        rotMatrix.setEulerYPR(euler_z, euler_y, euler_x);
+        rotMatrix.getRotation(relative_quaternion);
+
+//        double roll, pitch, yaw;
+//        rotMatrix.getRPY(roll, pitch, yaw);
+//        roll *= scale_rot_x_;
+//        pitch *= scale_rot_y_;
+//        yaw *= scale_rot_z_;
+//        relative_quaternion.setRPY(roll, pitch, yaw);
+      }
+
+      relative_quaternion = relative_quaternion * base_quaternion;
 
       geometry_msgs::Pose target_pose = base_pose_;
       target_pose.position.x += x;
@@ -197,12 +229,17 @@ int main(int argc, char** argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();	
 
-	double scale_factor; // MOD
-	node_handle.param("/iiwa/pose_follower/scale_factor", scale_factor, 1.0);
+	double scale_x, scale_y, scale_z, scale_rot_x, scale_rot_y, scale_rot_z; 
+	node_handle.param("/iiwa/pose_follower_server/scale_x", scale_x, 1.0);
+  node_handle.param("/iiwa/pose_follower_server/scale_y", scale_y, 1.0);
+	node_handle.param("/iiwa/pose_follower_server/scale_z", scale_z, 1.0);
+  node_handle.param("/iiwa/pose_follower_server/scale_rot_x", scale_rot_x, 1.0);
+	node_handle.param("/iiwa/pose_follower_server/scale_rot_y", scale_rot_y, 1.0);
+  node_handle.param("/iiwa/pose_follower_server/scale_rot_z", scale_rot_z, 1.0);
 
 //  action_server::MoveToJointPositionAction as_pose_follower("as_pose_follower");
 //  action_server::MoveToJointPositionAction as_pose_follower("as_pose_follower", &node_handle, "manipulator", "world");
-  pose_follower::PoseFollower pose_follower(&node_handle, "manipulator", "world", scale_factor, 2, "as_pose_follower");
+  pose_follower::PoseFollower pose_follower(&node_handle, "manipulator", "world", scale_x, scale_y, scale_z, scale_rot_x, scale_rot_y, scale_rot_z, 2, "as_pose_follower");
 
 //	pose_follower.moveToInitialJointPositions();
 //	pose_follower.setBasePoseToCurrent();

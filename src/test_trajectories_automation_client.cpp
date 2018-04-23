@@ -93,12 +93,12 @@ int main (int argc, char **argv)
 	initial_joint_positions11.joint_names[6] = "iiwa_joint_7";
 	initial_joint_positions11.points.resize(1);
 	initial_joint_positions11.points[0].positions.resize(7);
-	initial_joint_positions11.points[0].positions[0] = 3.1416/180.0 * -30.97;
-	initial_joint_positions11.points[0].positions[1] = 3.1416/180.0 * (18.34 - 90.0);
-	initial_joint_positions11.points[0].positions[2] = 3.1416/180.0 * -1.0 * -21.67;
-	initial_joint_positions11.points[0].positions[3] = 3.1416/180.0 * -57.57;
-	initial_joint_positions11.points[0].positions[4] = 3.1416/180.0 * (-1.0 * 59.36 + 90.0); 
-	initial_joint_positions11.points[0].positions[5] = 3.1416/180.0 * -4.63; 
+	initial_joint_positions11.points[0].positions[0] = 3.1416/180.0 * -1.0 * -30.97;
+	initial_joint_positions11.points[0].positions[1] = 3.1416/180.0 * (-1.0 * 18.34 + 90.0);
+	initial_joint_positions11.points[0].positions[2] = 3.1416/180.0 * -21.67;
+	initial_joint_positions11.points[0].positions[3] = 3.1416/180.0 * -1.0 * -57.57;
+	initial_joint_positions11.points[0].positions[4] = 3.1416/180.0 * (59.36 - 90.0); 
+	initial_joint_positions11.points[0].positions[5] = 3.1416/180.0 * -1.0 * -4.63; 
 	initial_joint_positions11.points[0].positions[6] = 3.1416/180.0 * 0.0;
 
   // ellbow halfway right
@@ -402,7 +402,7 @@ int main (int argc, char **argv)
   initial_joint_positions[2][3] = initial_joint_positions34;
   initial_joint_positions[2][4] = initial_joint_positions35;
 
-  // pose trajectory files 
+//  // pose trajectory files 
 //  trajectory_files[0] = "/home/niklas/ROS/niklas_ws/src/test_trajectories_automation/offline_files/poses/20180406_absolute_orientation/x_trans.csv";
 //  trajectory_files[1] = "/home/niklas/ROS/niklas_ws/src/test_trajectories_automation/offline_files/poses/20180406_absolute_orientation/y_trans.csv";
 //  trajectory_files[2] = "/home/niklas/ROS/niklas_ws/src/test_trajectories_automation/offline_files/poses/20180406_absolute_orientation/z_trans.csv";
@@ -443,7 +443,7 @@ int main (int argc, char **argv)
 
   for (int pose_index=0; pose_index<1; pose_index++) {
     for (int position_index=0; position_index<1; position_index++) {
-      for (int trajectory_index=0; trajectory_index<6; trajectory_index++) {
+      for (int trajectory_index=3; trajectory_index<6; trajectory_index++) {
         // moving to initial position
         status_word.data = calc_status_word(2, pose_index, position_index, trajectory_index);
         status_pub.publish(status_word);
